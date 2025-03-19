@@ -26,7 +26,7 @@ class _FileListState extends State<FileList> {
               FilePickerResult? result = await FilePicker.platform.pickFiles(
                 allowMultiple: true,
                 type: FileType.custom,
-                allowedExtensions: ['txt', 'dart', 'json'],
+                allowedExtensions: ['txt', 'dart', 'json' ,'*'],
               );
               if(result == null){
                 return;

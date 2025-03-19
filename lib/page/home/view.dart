@@ -20,6 +20,9 @@ class _HomeViewState extends State<HomeView> {
   late TextEditingController keyController;
   late TextEditingController jsonController;
 
+  bool useSingle = false;
+  bool wrapKey = true;
+
   @override
   void initState() {
     super.initState();
@@ -50,20 +53,42 @@ class _HomeViewState extends State<HomeView> {
                 color: Colors.white70,
                 child: Column(
                   children: [
+                    SizedBox(
+                      height: 100,
+                      child: Row(
+                        children: [
+                          Expanded(child: TextField(
+                            controller: trailController,
+                            maxLines: 100,
+                            decoration: const InputDecoration(
+                              hintText: '请输入每个json文件末尾相同的字符串',
+                            ),
+                          )),
+                          Expanded(child: TextField(
+                            controller: keyController,
+                            decoration: const InputDecoration(
+                              hintText: '请输入添加的key',
+                            ),
+                          )),
+                        ],
+                      ),
+                    ),
                     Row(
                       children: [
-                        Expanded(child: TextField(
-                          controller: trailController,
-                          decoration: const InputDecoration(
-                            hintText: '请输入每个json文件末尾相同的字符串',
-                          ),
-                        )),
-                        Expanded(child: TextField(
-                          controller: keyController,
-                          decoration: const InputDecoration(
-                            hintText: '请输入添加的key',
-                          ),
-                        )),
+                        Checkbox(value: useSingle, onChanged: (value){
+                          setState(() {
+                            useSingle = value ?? false;
+                          });
+                        }),
+                        const Text('使用单引号  '),
+
+                        Checkbox(value: wrapKey, onChanged: (value){
+                          setState(() {
+                            wrapKey = value ?? false;
+                          });
+                        }),
+                        const Text('用引号包裹key  '),
+
                       ],
                     ),
                     const Divider(),
@@ -76,12 +101,14 @@ class _HomeViewState extends State<HomeView> {
                     TextButton(onPressed: () async{
 
                       var insertMap = jsonDecode(jsonController.text);
+                      var st = useSingle ? "'" : '"';
+                      var st0 = wrapKey ? st : '';
 
                       for (var file in files) {
                         var f = file.xFile;
                         var rawJson = await f.readAsString();
                         var index = rawJson.lastIndexOf(trailController.text);
-                        String updatedContent = '${rawJson.substring(0, index)}  "${keyController.text}": "${insertMap[file.name.split('.')[0].replaceAll('"', '')]}",\n${rawJson.substring(index)}';
+                        String updatedContent = '${rawJson.substring(0, index)}  $st0${keyController.text}$st0: $st${insertMap[file.name.split('.')[0].replaceAll('"', '')]}$st,\n${rawJson.substring(index)}';
                         var write = File(f.path);
                         await write.writeAsString(updatedContent);
                       }
